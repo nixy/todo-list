@@ -12,7 +12,9 @@ dispatch =  [ ("add_to_list", add_to_list)
             , ("add_to_subsection", add_to_subsection)
             , ("rename_list", rename_list) 
             , ("view", view)  
-            , ("remove", remove)  
+            , ("delete_subsection", delete_subsection)
+            , ("delete_item", delete_item)
+            , ("delete_from_subsection", delete_from_subsection)  
             ]  
 
 -- adds to the list the item specified in the arguments
@@ -24,7 +26,8 @@ add_to_list list args =
         if length args > 1
             then 
                 do 
-                    let newList = list ++ [[(args !! 1)]]
+                    let newList = list ++ [[""] ++ ["* " ++ (args !! 1)]]
+                    print newList
                     write_file newList args   
             else 
                 do
@@ -33,7 +36,90 @@ add_to_list list args =
 
 add_to_subsection :: [[String]] -> [String] -> IO()
 add_to_subsection list args = 
-    print(list)
+    do
+        if length args > 2
+             then 
+                 do 
+                     -- checks to see if there is a subsection in the list that matches the one in args 
+                     -- if there is, it returns the list with the item written in the last position of the subsection list
+                     -- if not, we'll return an empty list and print a message to the user that the subsection did not exist 
+                     let newList = check_for_subsection list list args 0
+                     if length newList > 1
+                         then 
+                             do 
+                                 write_file newList args
+                         else 
+                             do
+                                 putStrLn "That subsection does not exist."
+             else
+                 do 
+                     putStrLn "Incorrect number of arguments - no item to append to the given subsection."
+
+
+check_for_subsection :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
+check_for_subsection [x] oldList args count =
+    do  
+        if ((head x) == (args !! 1))
+            then
+                do
+                    let newInnerList = x ++ [args !! 2]
+                    -- if the subsection is the first inner list that we come across 
+                    -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
+                    if count == 0
+                         then 
+                            do
+                                [newInnerList] ++ tail oldList
+                         else 
+                            do
+                                if count == (length oldList)
+                                    then
+                                        do
+                                            (init oldList) ++ [newInnerList]
+                                    else
+                                        do
+                                            let (xs, ys) = splitAt count oldList
+                                            xs ++ [newInnerList] ++ (tail ys)
+            -- if the last inner list is not the subsection that we're looking for, it's not in the list at all
+            -- we return a list with an empty string 
+            else 
+                do
+                    [[""]]
+
+check_for_subsection currentList oldList args count =
+    do  
+        let x = head currentList
+        if ((head x) == (args !! 1))
+            then
+                do
+                    -- newInnerList is the sublist + the item we want to append as the last element of the list
+                    -- we can do stuff like "append" vs. "prepend" later 
+                    let newInnerList = x ++ [args !! 2]
+                    -- if the subsection is the first inner list that we come across  
+                    -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
+                    if count == 0
+                         then 
+                            do
+                                [newInnerList] ++ tail oldList
+                         else 
+                            do
+                                -- if the subsection is the last possible line in the list (this IS possible)
+                                if count == (length oldList)
+                                    then
+                                        do
+                                            (init oldList) ++ [newInnerList]
+                                    -- else, it's somewhere in the middle of the list
+                                    -- meaning we need to account for the first half, the new item, and the second half
+                                    else
+                                        do
+                                            let (xs, ys) = splitAt count oldList
+                                            xs ++ [newInnerList] ++ (tail ys)
+            -- if the current inner list is not the subsection that we are looking for, then we call the function again with the tail
+            else 
+                do
+                    check_for_subsection (tail currentList) oldList args (count+1) 
+                    
+
+
 
 create_list :: [String] -> IO()
 create_list list = 
@@ -47,8 +133,16 @@ view :: [[String]] -> [String] -> IO()
 view list args = 
     print(list)
 
-remove :: [[String]] -> [String] -> IO()
-remove list args =
+delete_item :: [[String]] -> [String] -> IO()
+delete_item list args =
+    print(list)
+
+delete_subsection :: [[String]] -> [String] -> IO()
+delete_subsection list args =
+    print(list)
+
+delete_from_subsection :: [[String]] -> [String] -> IO()
+delete_from_subsection list args =
     print(list)
 
 
@@ -101,26 +195,26 @@ write_inner_file buffer args =
         if (length x > 1)
             then 
                 do
-                    if (x !! 0 == '#' && x !! 1 == '#')
+                    if (x !! 0 == '#' && x !! 1 /= '#')
                         then 
                             do
-                                write_inner_file (tail buffer) args
                                 appendFile (head args) (x ++ "\n" ++ "\n")
+                                write_inner_file (tail buffer) args
                         else
                             do
-                                if (x !! 0 == '#' && x !! 1 /= '#')
+                                if (x !! 0 == '#' && x !! 1 == '#')
                                     then
                                         do
-                                            write_inner_file (tail buffer) args
                                             appendFile (head args) ("\n" ++ x ++ "\n")
+                                            write_inner_file (tail buffer) args
                                     else
                                         do
-                                            write_inner_file (tail buffer) args
                                             appendFile (head args) (x ++ "\n")
+                                            write_inner_file (tail buffer) args
             else 
                 do 
-                    write_inner_file (tail buffer) args
                     appendFile (head args) (x ++ "\n")
+                    write_inner_file (tail buffer) args
 
 
 -- Returns a list with all of the lines from the XML file 
@@ -219,7 +313,8 @@ breakdown fileData buffer =
                                                   do 
                                                        -- else, it's a subsection-less element 
                                                        -- we will probably want more elses in here for error-handling, but for now, I'm just assuming these 3 possibilities 
-                                                       let newBuffer = buffer ++ [[h]]
+                                                       -- The empty string for the head of the element is just so we can get an extra space in there 
+                                                       let newBuffer = buffer ++ [[""]++[h]]
                                                        breakdown t newBuffer 
                          else breakdown t buffer
              else buffer
