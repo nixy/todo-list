@@ -33,6 +33,7 @@ add_to_list list args =
                 do
                     putStrLn "Incorrect number of arguments - no item to append."
 
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 add_to_subsection :: [[String]] -> [String] -> IO()
 add_to_subsection list args = 
@@ -118,7 +119,7 @@ check_for_subsection currentList oldList args count =
                 do
                     check_for_subsection (tail currentList) oldList args (count+1) 
                     
-
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 create_list :: [String] -> IO()
@@ -133,17 +134,216 @@ view :: [[String]] -> [String] -> IO()
 view list args = 
     print(list)
 
+
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_item :: [[String]] -> [String] -> IO()
 delete_item list args =
-    print(list)
+    do   
+        if length args > 1
+            then 
+                do 
+                    let newList = check_for_delete list list args 0 
+                    if length newList > 0
+                        then 
+                            do
+                                print newList
+                                write_file newList args
+                        else 
+                            do
+                                putStrLn "That item cannot be deleted - does not exist."
+            else 
+                do
+                    putStrLn "Incorrect number of arguments - no item to delete."
 
+-- This function assumes that items not in subsections are in their own sublists consisting of ["", item]
+-- We can access the item directly by doing list !! 1 and we don't have to recursively go through the sublist like we do for deleting an item from a subsection
+check_for_delete :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
+check_for_delete [x] oldList args count =
+    do  
+        if (length x == 2)
+            then 
+                do 
+                    if ((x !! 1) == (args !! 1))
+                        then
+                            do
+                                -- If the item to delete is the last item in the file/list, we can just pass back the old list sans the last value
+                                init oldList
+                        -- If the item to delete is not in the last element of our buffer list, then it's not there at all
+                        -- We pass the function that called it an empty list 
+                        else 
+                            do 
+                                 [[""]]
+            else 
+                 do
+
+                     [[""]]
+check_for_delete currentList oldList args count = 
+    do
+        let x = head currentList
+        if (length x == 2)
+            then 
+                do 
+                     if ((x !! 1) == (args !! 1))
+                        then 
+                            do
+                                let (xs, ys) = splitAt count oldList
+                                -- We pass back the old list sans the element that we wish to remove 
+                                xs ++ (tail ys)
+                        else 
+                            do
+                                check_for_delete (tail currentList) oldList args (count+1)
+            else 
+                do
+                    check_for_delete (tail currentList) oldList args (count+1)
+
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_subsection :: [[String]] -> [String] -> IO()
 delete_subsection list args =
-    print(list)
+    if length args > 1
+        then
+            do
+                let newList = delete_check_subsection list list args 0
+                if length newList > 0
+                    then 
+                        do
+                            write_file newList args
+                    else 
+                        do
+                            putStrLn "Subsection to delete not found"
+        else 
+            do
+                putStrLn "Incorrect number of arguments - no subsection to delete"
 
+delete_check_subsection :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
+delete_check_subsection [x] oldList args count =
+    do  
+        if (length x > 0)
+            then
+                do 
+                    if ((head x) == (args !! 1))
+                        then
+                            do
+                                init oldList
+                        else 
+                            [[""]]
+            else 
+                [[""]]
+delete_check_subsection currentList oldList args count = 
+    do 
+        let x = head currentList
+        if (length x > 0)
+            then 
+                do 
+                    if ((head x) == (args !! 1))
+                        then 
+                            do
+                                let (xs, ys) = splitAt count oldList
+                                xs ++ tail ys
+                        else 
+                            do
+                                delete_check_subsection (tail currentList) oldList args (count+1)
+            else 
+                do
+                    delete_check_subsection (tail currentList) oldList args (count+1)
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+
+
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_from_subsection :: [[String]] -> [String] -> IO()
 delete_from_subsection list args =
-    print(list)
+     if length args > 2
+        then
+            do
+                let newList = delete_check_item list list args 0
+                if length newList > 1
+                    then 
+                        do
+                            write_file newList args
+                    else 
+                        do
+                            putStrLn "Either item or subsection not found"
+        else 
+            do
+                putStrLn "Incorrect number of arguments - no item to delete"
+
+delete_check_item :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
+delete_check_item [x] oldList args count =
+    do
+         if (length x > 0)
+            then
+                do 
+                    -- If the parameter matches (it is the correct subsection), then we must check the items in the list to see if 
+                    -- the item that the user specified to delete exists
+                    if ((head x) == (args !! 1))
+                        then
+                            do
+                                -- Returns either the new list with the item deleted or an empty list if it was not found  
+                                let innerList = check_delete_inner x x args 0
+                                if (length innerList > 0)
+                                    then 
+                                        do
+                                            (init oldList) ++ [innerList]
+                                    else 
+                                        do
+                                            [[""]]
+                        else 
+                            [[""]]
+            else 
+                [[""]]
+delete_check_item currentList oldList args count = 
+    do
+        let x = head currentList 
+        if (length x > 0)
+            then 
+                do 
+                    if ((head x) == (args !! 1))
+                        then 
+                            do
+                                let innerList = check_delete_inner x x args 0
+                                if (length innerList > 1)
+                                    then 
+                                        do
+                                            let (xs, ys) = splitAt count oldList 
+                                            xs ++ [innerList] ++ tail ys
+                                    else 
+                                        do 
+                                            [[""]]
+                        else 
+                            delete_check_item (tail currentList) oldList args (count+1)
+            else 
+                 delete_check_item (tail currentList) oldList args (count+1)
+
+check_delete_inner :: [String] -> [String] -> [String] -> Int -> [String] 
+check_delete_inner [x] oldList args count =
+    do
+        -- if the item to delete matches up with the last one
+        if (x == (args !! 2))
+             then 
+                do
+                    -- we send back the oldList, sans the one to delete
+                    init oldList
+            -- else, we haven't found the item to delete - we send back an empty list 
+             else
+                do
+                    []
+check_delete_inner currentList oldList args count =
+    do
+        let x = head currentList
+        if (x == (args !! 2))
+            then
+                do
+                    let (xs, ys) = splitAt count oldList
+                    xs ++ tail ys
+            else
+                do
+                    check_delete_inner (tail currentList) oldList args (count+1)
+
+--@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 -- Writes the given list to the file specified in args
