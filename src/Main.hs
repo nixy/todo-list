@@ -31,5 +31,5 @@ main = do
                               , "\t delete_item"
                               , "\t delete_from_subsection"
                               , "\t create_new_todo_list"])
-      else putStrLn "Exiting the application."
+      else putStrLn ""
    getArgs >>= print . head
