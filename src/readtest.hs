@@ -9,6 +9,10 @@ import Data.Char
 
 dispatch :: [(String, [[String]] -> [String] -> IO ())]  
 dispatch =  [ ("add_to_list", add_to_list) 
+            , ("add_doable", add_doable)
+            , ("add_doable_to_subsection", add_doable_to_subsection)
+            , ("do_item", do_item)
+            , ("undo_item", undo_item)
             , ("add_to_subsection", add_to_subsection)
             , ("rename_list", rename_list) 
             , ("view", view)  
@@ -33,10 +37,26 @@ add_to_list list args =
                 do
                     putStrLn "Incorrect number of arguments - no item to append."
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-add_to_subsection :: [[String]] -> [String] -> IO()
-add_to_subsection list args = 
+
+-- adds to the list the item specified in the arguments
+-- the first item in the arguments should be the file name, and the second should be the item to append
+-- other error checking is needed 
+add_doable :: [[String]] -> [String] -> IO()
+add_doable list args = 
+     do   
+        if length args > 1
+            then 
+                do 
+                    let newList = list ++ [[""] ++ ["* [ ] " ++ (args !! 1)]]
+                    print newList
+                    write_file newList args   
+            else 
+                do
+                    putStrLn "Incorrect number of arguments - no item to append."
+
+add_doable_to_subsection :: [[String]] -> [String] -> IO()
+add_doable_to_subsection list args =
     do
         if length args > 2
              then 
@@ -44,7 +64,7 @@ add_to_subsection list args =
                      -- checks to see if there is a subsection in the list that matches the one in args 
                      -- if there is, it returns the list with the item written in the last position of the subsection list
                      -- if not, we'll return an empty list and print a message to the user that the subsection did not exist 
-                     let newList = check_for_subsection list list args 0
+                     let newList = check_for_subsection list list args 0 "* [ ] "
                      if length newList > 1
                          then 
                              do 
@@ -57,13 +77,38 @@ add_to_subsection list args =
                      putStrLn "Incorrect number of arguments - no item to append to the given subsection."
 
 
-check_for_subsection :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
-check_for_subsection [x] oldList args count =
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+add_to_subsection :: [[String]] -> [String] -> IO()
+add_to_subsection list args = 
+    do
+        if length args > 2
+             then 
+                 do 
+                     -- checks to see if there is a subsection in the list that matches the one in args 
+                     -- if there is, it returns the list with the item written in the last position of the subsection list
+                     -- if not, we'll return an empty list and print a message to the user that the subsection did not exist 
+                     let newList = check_for_subsection list list args 0 "* "
+                     if length newList > 1
+                         then 
+                             do 
+                                 write_file newList args
+                         else 
+                             do
+                                 putStrLn "That subsection does not exist."
+             else
+                 do 
+                     putStrLn "Incorrect number of arguments - no item to append to the given subsection."
+
+
+check_for_subsection :: [[String]] -> [[String]] -> [String] -> Int -> String -> [[String]]
+check_for_subsection [x] oldList args count typeOfItem =
     do  
         if ((head x) == (args !! 1))
             then
                 do
-                    let newInnerList = x ++ [args !! 2]
+                    let newInnerList = x ++ [typeOfItem ++ args !! 2]
                     -- if the subsection is the first inner list that we come across 
                     -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
                     if count == 0
@@ -86,7 +131,7 @@ check_for_subsection [x] oldList args count =
                 do
                     [[""]]
 
-check_for_subsection currentList oldList args count =
+check_for_subsection currentList oldList args count typeOfItem =
     do  
         let x = head currentList
         if ((head x) == (args !! 1))
@@ -94,7 +139,7 @@ check_for_subsection currentList oldList args count =
                 do
                     -- newInnerList is the sublist + the item we want to append as the last element of the list
                     -- we can do stuff like "append" vs. "prepend" later 
-                    let newInnerList = x ++ [args !! 2]
+                    let newInnerList = x ++ [typeOfItem ++ args !! 2]
                     -- if the subsection is the first inner list that we come across  
                     -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
                     if count == 0
@@ -117,9 +162,9 @@ check_for_subsection currentList oldList args count =
             -- if the current inner list is not the subsection that we are looking for, then we call the function again with the tail
             else 
                 do
-                    check_for_subsection (tail currentList) oldList args (count+1) 
+                    check_for_subsection (tail currentList) oldList args (count+1) typeOfItem 
                     
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 create_list :: [String] -> IO()
@@ -128,14 +173,26 @@ create_list list =
 
 rename_list :: [[String]] -> [String] -> IO()
 rename_list list args = 
-    print(list)
+    do
+        if (length args > 1)
+            then
+                do
+                    let newList = [["# " ++ args !! 1]] ++ (tail list)
+                    write_file newList args
+            else
+                putStrLn "Incorrect number of arguments - no new name given."
 
 view :: [[String]] -> [String] -> IO()
+view [x] args =
+    do
+        print(x)
 view list args = 
-    print(list)
+    do
+        print(head list)
+        view (tail list) args
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_item :: [[String]] -> [String] -> IO()
 delete_item list args =
     do   
@@ -196,11 +253,11 @@ check_for_delete currentList oldList args count =
                 do
                     check_for_delete (tail currentList) oldList args (count+1)
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_subsection :: [[String]] -> [String] -> IO()
 delete_subsection list args =
     if length args > 1
@@ -249,17 +306,17 @@ delete_check_subsection currentList oldList args count =
             else 
                 do
                     delete_check_subsection (tail currentList) oldList args (count+1)
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_from_subsection :: [[String]] -> [String] -> IO()
 delete_from_subsection list args =
      if length args > 2
         then
             do
-                let newList = delete_check_item list list args 0
+                let newList = delete_check_item list list args 0 
                 if length newList > 1
                     then 
                         do
@@ -343,8 +400,185 @@ check_delete_inner currentList oldList args count =
                 do
                     check_delete_inner (tail currentList) oldList args (count+1)
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DO_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+do_item :: [[String]] -> [String] -> IO()
+do_item list args = 
+    do
+        if length args > 1
+        then
+            do
+                let newList = doable_check list list args 0 "do"
+                if length newList > 1
+                    then 
+                         do
+                             write_file newList args
+                    else 
+                        do
+                            if (length newList > 0)
+                                then 
+                                    do
+                                         putStrLn (head (head newList))
+                                else 
+                                     do
+                                         putStrLn "There was an error with the item written"
+
+        else 
+            do
+                putStrLn "Incorrect number of arguments - no item given to do"
+
+doable_check :: [[String]] -> [[String]] -> [String] -> Int -> String -> [[String]]
+doable_check [x] oldList args count typeOfItem = 
+    do
+        if (typeOfItem == "do") 
+            then 
+                do
+                    if (length x > 1)
+                        then 
+                            do 
+                                -- First, we check if the strings are the same and that the item is unchecked
+                                if ((x !! 1) == ("* [ ] " ++ args !! 1))
+                                    then
+                                        do
+                                            -- If they are, then we return the item checked off 
+                                            init oldList ++ [[head x]] ++ [["* [x] " ++ args !! 1]]
+                                    -- If they are equivalent, but it is already done, it cannot be done again 
+                                    else if ((x !! 1) == ("* [x] " ++ args !! 1))
+                                        then 
+                                            do 
+                                                [["Item checked off already"]]
+                                        -- Else, if they are equivalent, but the item in the list is not a doable item 
+                                        else if ((x !! 1) == args !! 1)
+                                            then
+                                                do
+                                                    [["Item is not doable"]]
+                                            else 
+                                                do
+                                                    [["Item does not exist"]]
+                        else 
+                            [["Item does not exist"]]
+            else
+                do
+                    if (length x > 1)
+                        then 
+                            do
+                                 -- First, we check if the strings are the same and that the item is checked
+                                if ((x !! 1) == ("* [x] " ++ args !! 1))
+                                    then
+                                        do
+                                            -- If they are, then we return the item unchecked
+                                            init oldList ++ [[head x]] ++ [["* [ ] " ++ args !! 1]]
+                                    -- If they are equivalent, but it is already done, it cannot be done again 
+                                    else if ((x !! 1) == ("* [ ] " ++ args !! 1))
+                                        then 
+                                            do 
+                                                [["Item already unchecked"]]
+                                        -- Else, if they are equivalent, but the item in the list is not a doable item 
+                                        else if ((x !! 1) == args !! 1)
+                                            then
+                                                do
+                                                    [["Item is not doable"]]
+                                            else 
+                                                do
+                                                    [["Item does not exist"]]
+                        else 
+                            [["Item does not exist"]]
+
+doable_check currentList oldList args count typeOfItem = 
+    do
+        let x = head currentList
+        if (typeOfItem == "do")
+            then
+                do
+                    if (length x > 1)
+                        then
+                            do
+                                -- First, we check if the strings are the same and that the item is unchecked
+                                if ((x !! 1) == ("* [ ] " ++ args !! 1))
+                                    then
+                                        do
+                                            -- If they are, then we return the item checked off 
+                                            let innerList = [head x] ++ ["* [x] " ++ args !! 1]
+                                            let (xs, ys) = splitAt count oldList 
+                                            xs ++ [innerList] ++ tail ys
+                                    -- If they are equivalent, but it is already done, it cannot be done again 
+                                    else if ((x !! 1) == ("* [x] " ++ args !! 1))
+                                        then 
+                                            do 
+                                                [["Item checked off already"]]
+                                        -- Else, if they are equivalent, but the item in the list is not a doable item 
+                                        else if ((x !! 1) == ("* " ++ args !! 1))
+                                            then
+                                                do
+                                                    [["Item is not doable"]]
+                                            else 
+                                                do
+                                                    doable_check (tail currentList) oldList args (count+1) typeOfItem
+                        else 
+                            do
+                                doable_check (tail currentList) oldList args (count+1) typeOfItem
+            else
+                 do
+                    if (length x > 1)
+                        then
+                            do
+                                -- First, we check if the strings are the same and that the item is checked
+                                if ((x !! 1) == ("* [x] " ++ args !! 1))
+                                    then
+                                        do
+                                            -- If they are, then we return the item unchecked 
+                                            let innerList = [head x] ++ ["* [ ] " ++ args !! 1]
+                                            let (xs, ys) = splitAt count oldList 
+                                            xs ++ [innerList] ++ tail ys
+                                    -- If they are equivalent, but it is already done, it cannot be done again 
+                                    else if ((x !! 1) == ("* [ ] " ++ args !! 1))
+                                        then 
+                                            do 
+                                                [["Item already unchecked"]]
+                                        -- Else, if they are equivalent, but the item in the list is not a doable item 
+                                        else if ((x !! 1) == ("* " ++ args !! 1))
+                                            then
+                                                do
+                                                    [["Item is not doable"]]
+                                            else 
+                                                do
+                                                    doable_check (tail currentList) oldList args (count+1) typeOfItem
+                        else 
+                            do
+                                doable_check (tail currentList) oldList args (count+1) typeOfItem
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END DO ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ UNDO ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+undo_item :: [[String]] -> [String] -> IO()
+undo_item list args = 
+    do
+        if length args > 1
+        then
+            do
+                let newList = doable_check list list args 0 "undo"
+                if length newList > 1
+                    then 
+                         do
+                             write_file newList args
+                    else 
+                        do
+                            if (length newList > 0)
+                                then 
+                                    do
+                                         putStrLn (head (head newList))
+                                else 
+                                     do
+                                         putStrLn "There was an error with the item written"
+
+        else 
+            do
+                putStrLn "Incorrect number of arguments - no item given to undo"
+
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END UNDO ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 -- Writes the given list to the file specified in args
 -- "buffer" should be a list of lists, so we pass data to a function to write the inner elements of this list 
@@ -478,7 +712,7 @@ breakdown :: [String] -> [[String]] -> [[String]]
 breakdown [] buffer = buffer 
 breakdown [h] buffer = 
      do 
-          buffer ++ [[h]]
+          buffer ++ [[""]++[h]]
           
 breakdown fileData buffer = 
      do
