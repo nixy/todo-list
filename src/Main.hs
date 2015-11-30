@@ -32,9 +32,12 @@ main = do
                               , "\t delete_subsection"
                               , "\t delete_item"
                               , "\t delete_from_subsection"
-                              , "\t create_new_todo_list"])
-      else putStrLn "Exiting the application."
-   if cmd == "ReadTest"
-      then hi
+                              , "\t create_new_list"])
       else putStrLn ""
+   if cmd == "ReadTest"
+      then callModule
+      else putStrLn ""
+   if cmd == "create_new_list"
+   	  then create_new_list
+   	  else putStrLn ""
    getArgs >>= print . head
