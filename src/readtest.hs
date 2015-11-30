@@ -1,3 +1,4 @@
+module ReadTest(dispatch, hi) where
 import System.IO
 import System.Environment  
 import System.IO.Unsafe 
@@ -15,7 +16,10 @@ dispatch =  [ ("add_to_list", add_to_list)
             , ("delete_subsection", delete_subsection)
             , ("delete_item", delete_item)
             , ("delete_from_subsection", delete_from_subsection)  
-            ]  
+            ] 
+
+-- testing for the module functionality
+hi = do putStrLn "Hi, you just called this module successfully." 
 
 -- adds to the list the item specified in the arguments
 -- the first item in the arguments should be the file name, and the second should be the item to append
@@ -33,7 +37,7 @@ add_to_list list args =
                 do
                     putStrLn "Incorrect number of arguments - no item to append."
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 add_to_subsection :: [[String]] -> [String] -> IO()
 add_to_subsection list args = 
@@ -119,7 +123,7 @@ check_for_subsection currentList oldList args count =
                 do
                     check_for_subsection (tail currentList) oldList args (count+1) 
                     
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 create_list :: [String] -> IO()
@@ -135,7 +139,7 @@ view list args =
     print(list)
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_item :: [[String]] -> [String] -> IO()
 delete_item list args =
     do   
@@ -196,11 +200,11 @@ check_for_delete currentList oldList args count =
                 do
                     check_for_delete (tail currentList) oldList args (count+1)
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_subsection :: [[String]] -> [String] -> IO()
 delete_subsection list args =
     if length args > 1
@@ -249,11 +253,11 @@ delete_check_subsection currentList oldList args count =
             else 
                 do
                     delete_check_subsection (tail currentList) oldList args (count+1)
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 delete_from_subsection :: [[String]] -> [String] -> IO()
 delete_from_subsection list args =
      if length args > 2
@@ -343,7 +347,7 @@ check_delete_inner currentList oldList args count =
                 do
                     check_delete_inner (tail currentList) oldList args (count+1)
 
---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 -- Writes the given list to the file specified in args
@@ -549,8 +553,11 @@ main = do
                                         -- create the file since it doesn't exist
                                         putStrLn "This file does not exist. A new To-Do file will be created." 
                                         currentDirectory <- getCurrentDirectory
-                                        let newFilePath = currentDirectory ++ "\\" ++ fileName
-                                        openFile newFilePath ReadWriteMode 
+                                        let filename = "newTodo.md"
+                                        let newFilePath = currentDirectory ++ "\\" ++ filename
+                                        openFile newFilePath ReadWriteMode -- returns Handle not IO ()
+                                        putStr "Created new list file: " 
+                                        putStrLn newFilePath
          else 
              do
                  putStrLn "Incorrect number of arguments"    
