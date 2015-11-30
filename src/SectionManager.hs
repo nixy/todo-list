@@ -18,3 +18,6 @@ makeSectionTitle string = string ++ "\n" ++ (take (length string) (repeat '-'))
 
 makeSection :: SectionTitle -> [Item] -> [Doable] -> Section
 makeSection sectionTitle items doables= (sectionTitle, items, doables)
+
+--isSectionTitle :: String -> Bool
+--isSectionTitle string
