@@ -20,13 +20,15 @@ import Data.List (isPrefixOf)
 
 -- The style of the bullets to use
 -- TEMPORARY
-bulletStyle = '-' :: Char
+bulletStyle = '*' :: Char
+-- bulletStyle = '-' :: Char
+-- bulletStyle = '+' :: Char
 
 -- An Item in a list
 -- EX: * This is an item
 type Item = String
 
--- A doable item in a list
+-- A Doable Item in a list
 -- EX: * [ ] Do this item
 type Doable = String
 
@@ -67,8 +69,10 @@ doDoable doable = (head doable):" [x]" ++ (drop 5 doable)
 undoDoable :: Doable -> Doable
 undoDoable doable = (head doable):" [ ]" ++ (drop 5 doable) 
 
+-- Converts an Item to a Doable
 itemToDoable :: Item -> Doable
 itemToDoable item = (head item):" [ ]" ++ (tail item)
 
+-- Converts a Doable to an Item
 doableToItem :: Doable -> Item
 doableToItem doable = (head doable):(drop 5 doable)

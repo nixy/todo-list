@@ -1,1 +1,15 @@
-Insert things that need to be done here
+TODO
+====
+
+Robustness
+----------
+* Currently unsure how error-handling will work. Any suggestions?
+
+Flexibility
+-----------
+* Right now any amount of leading whitespace will break all functions.
+*
+
+Features
+--------
+* Currently missing a way to do ordered lists
