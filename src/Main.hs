@@ -9,6 +9,7 @@
                                                                              |___/  
 -}
 import System.Environment
+import ReadTest
 
 main :: IO()
 main = do
@@ -16,8 +17,9 @@ main = do
    putStrLn "INITIATING TO-DO LIST MANAGER"
    putStrLn "=============================="
 
-   let startPrompt = unlines ["Hello, enter your Daily, Weekly, or Monthly tasks.",
-                              ">>>Type 'help' for a general list of commands & instructions. Press CTRL/CMD + C to quit."]
+   let startPrompt = unlines ["Hello, enter your Daily, Weekly, or Monthly tasks."
+                              , ">>>Type 'help' for a general list of commands & instructions. Press CTRL/CMD + C to quit."
+                              , ">>> Otherwise, type in your tasks and we'll do the rest!"]
 
    putStrLn startPrompt   
    cmd <- getLine
@@ -31,5 +33,8 @@ main = do
                               , "\t delete_item"
                               , "\t delete_from_subsection"
                               , "\t create_new_todo_list"])
+      else putStrLn "Exiting the application."
+   if cmd == "ReadTest"
+      then hi
       else putStrLn ""
    getArgs >>= print . head
