@@ -34,16 +34,15 @@ type Doable = String
 
 -- Makes an Item from a string
 makeItem :: String -> Item 
-makeItem string = bulletStyle:" " ++ string
+makeItem string = bulletStyle:" " ++ string ++ "\n"
 
 -- Makes a Doable from a string
 makeDoable :: String -> Doable
-makeDoable string = bulletStyle:" [ ] " ++ string
+makeDoable string = bulletStyle:" [ ] " ++ string ++ "\n"
 
 -- Checks if a string is an Item
 isItem :: String -> Bool
 isItem string
-    | isDoable string = False
     | isPrefixOf (bulletStyle:" ") string = True
     | otherwise = False
 

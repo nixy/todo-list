@@ -1,20 +1,24 @@
-# To-do list
+To-do list
+==========
 
-##Daily
+Daily
+-----
 * Walk dog
 * Feed cats
 * Mow lawn
 
 - Eat sandwiches
 
-##Weekly
+Weekly
+------
 * Wash dog
 * Change oil
 
 * Learn Scala
 * Lose 5 pounds
 
-##Monthly
+Monthly
+-------
 * Bleh bleh
 * Blah blah blah 
 - Bloo bloo bloo 
