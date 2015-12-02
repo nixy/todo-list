@@ -5,22 +5,24 @@ import System.Directory
 import Data.List
 import Data.List (intercalate)
 import Data.Char
+import CreateNewTaskList
+import Text.Pandoc 
 
 
 dispatch :: [(String, [[String]] -> [String] -> IO ())]  
 dispatch =  [ ("add_to_list", add_to_list) 
             , ("add_doable", add_doable)
-            , ("add_doable_to_subsection", add_doable_to_subsection)
+            , ("add_doable_to_section", add_doable_to_section)
             , ("do_item", do_item)
             , ("undo_item", undo_item)
-            , ("add_to_subsection", add_to_subsection)
+            , ("add_to_section", add_to_section)
             , ("rename_list", rename_list) 
             , ("view", view)  
-            , ("delete_subsection", delete_subsection)
+            , ("delete_section", delete_section)
             , ("delete_item", delete_item)
-            , ("delete_from_subsection", delete_from_subsection)  
+            , ("delete_from_section", delete_from_section)  
             ]  
-
+callModule = do putStrLn "You have successfully called this module!"
 -- adds to the list the item specified in the arguments
 -- the first item in the arguments should be the file name, and the second should be the item to append
 -- other error checking is needed 
@@ -55,61 +57,61 @@ add_doable list args =
                 do
                     putStrLn "Incorrect number of arguments - no item to append."
 
-add_doable_to_subsection :: [[String]] -> [String] -> IO()
-add_doable_to_subsection list args =
+add_doable_to_section :: [[String]] -> [String] -> IO()
+add_doable_to_section list args =
     do
         if length args > 2
              then 
                  do 
-                     -- checks to see if there is a subsection in the list that matches the one in args 
-                     -- if there is, it returns the list with the item written in the last position of the subsection list
-                     -- if not, we'll return an empty list and print a message to the user that the subsection did not exist 
-                     let newList = check_for_subsection list list args 0 "* [ ] "
+                     -- checks to see if there is a section in the list that matches the one in args 
+                     -- if there is, it returns the list with the item written in the last position of the section list
+                     -- if not, we'll return an empty list and print a message to the user that the section did not exist 
+                     let newList = check_for_section list list args 0 "* [ ] "
                      if length newList > 1
                          then 
                              do 
                                  write_file newList args
                          else 
                              do
-                                 putStrLn "That subsection does not exist."
+                                 putStrLn "That section does not exist."
              else
                  do 
-                     putStrLn "Incorrect number of arguments - no item to append to the given subsection."
+                     putStrLn "Incorrect number of arguments - no item to append to the given section."
 
 
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADD_TO_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-add_to_subsection :: [[String]] -> [String] -> IO()
-add_to_subsection list args = 
+add_to_section :: [[String]] -> [String] -> IO()
+add_to_section list args = 
     do
         if length args > 2
              then 
                  do 
-                     -- checks to see if there is a subsection in the list that matches the one in args 
-                     -- if there is, it returns the list with the item written in the last position of the subsection list
-                     -- if not, we'll return an empty list and print a message to the user that the subsection did not exist 
-                     let newList = check_for_subsection list list args 0 "* "
+                     -- checks to see if there is a section in the list that matches the one in args 
+                     -- if there is, it returns the list with the item written in the last position of the section list
+                     -- if not, we'll return an empty list and print a message to the user that the section did not exist 
+                     let newList = check_for_section list list args 0 "* "
                      if length newList > 1
                          then 
                              do 
                                  write_file newList args
                          else 
                              do
-                                 putStrLn "That subsection does not exist."
+                                 putStrLn "That section does not exist."
              else
                  do 
-                     putStrLn "Incorrect number of arguments - no item to append to the given subsection."
+                     putStrLn "Incorrect number of arguments - no item to append to the given section."
 
 
-check_for_subsection :: [[String]] -> [[String]] -> [String] -> Int -> String -> [[String]]
-check_for_subsection [x] oldList args count typeOfItem =
+check_for_section :: [[String]] -> [[String]] -> [String] -> Int -> String -> [[String]]
+check_for_section [x] oldList args count typeOfItem =
     do  
         if ((head x) == (args !! 1))
             then
                 do
                     let newInnerList = x ++ [typeOfItem ++ args !! 2]
-                    -- if the subsection is the first inner list that we come across 
+                    -- if the section is the first inner list that we come across 
                     -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
                     if count == 0
                          then 
@@ -125,13 +127,13 @@ check_for_subsection [x] oldList args count typeOfItem =
                                         do
                                             let (xs, ys) = splitAt count oldList
                                             xs ++ [newInnerList] ++ (tail ys)
-            -- if the last inner list is not the subsection that we're looking for, it's not in the list at all
+            -- if the last inner list is not the section that we're looking for, it's not in the list at all
             -- we return a list with an empty string 
             else 
                 do
                     [[""]]
 
-check_for_subsection currentList oldList args count typeOfItem =
+check_for_section currentList oldList args count typeOfItem =
     do  
         let x = head currentList
         if ((head x) == (args !! 1))
@@ -140,7 +142,7 @@ check_for_subsection currentList oldList args count typeOfItem =
                     -- newInnerList is the sublist + the item we want to append as the last element of the list
                     -- we can do stuff like "append" vs. "prepend" later 
                     let newInnerList = x ++ [typeOfItem ++ args !! 2]
-                    -- if the subsection is the first inner list that we come across  
+                    -- if the section is the first inner list that we come across  
                     -- (not actually a possible case, I'm pretty sure - the head of the list will always be the title of the file) 
                     if count == 0
                          then 
@@ -148,7 +150,7 @@ check_for_subsection currentList oldList args count typeOfItem =
                                 [newInnerList] ++ tail oldList
                          else 
                             do
-                                -- if the subsection is the last possible line in the list (this IS possible)
+                                -- if the section is the last possible line in the list (this IS possible)
                                 if count == (length oldList)
                                     then
                                         do
@@ -159,17 +161,21 @@ check_for_subsection currentList oldList args count typeOfItem =
                                         do
                                             let (xs, ys) = splitAt count oldList
                                             xs ++ [newInnerList] ++ (tail ys)
-            -- if the current inner list is not the subsection that we are looking for, then we call the function again with the tail
+            -- if the current inner list is not the section that we are looking for, then we call the function again with the tail
             else 
                 do
-                    check_for_subsection (tail currentList) oldList args (count+1) typeOfItem 
+                    check_for_section (tail currentList) oldList args (count+1) typeOfItem 
                     
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF ADD_TO_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 create_list :: [String] -> IO()
 create_list list = 
     print(list)
+
+create_new_list :: IO()
+create_new_list = do makeFile
+
 
 rename_list :: [[String]] -> [String] -> IO()
 rename_list list args = 
@@ -212,15 +218,15 @@ delete_item list args =
                 do
                     putStrLn "Incorrect number of arguments - no item to delete."
 
--- This function assumes that items not in subsections are in their own sublists consisting of ["", item]
--- We can access the item directly by doing list !! 1 and we don't have to recursively go through the sublist like we do for deleting an item from a subsection
+-- This function assumes that items not in sections are in their own sublists consisting of ["", item]
+-- We can access the item directly by doing list !! 1 and we don't have to recursively go through the sublist like we do for deleting an item from a section
 check_for_delete :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
 check_for_delete [x] oldList args count =
     do  
         if (length x == 2)
             then 
                 do 
-                    if ((x !! 1) == (args !! 1))
+                    if ((x !! 1) == ("* " ++ args !! 1))
                         then
                             do
                                 -- If the item to delete is the last item in the file/list, we can just pass back the old list sans the last value
@@ -240,7 +246,7 @@ check_for_delete currentList oldList args count =
         if (length x == 2)
             then 
                 do 
-                     if ((x !! 1) == (args !! 1))
+                     if ((x !! 1) == ("* " ++ args !! 1))
                         then 
                             do
                                 let (xs, ys) = splitAt count oldList
@@ -257,31 +263,31 @@ check_for_delete currentList oldList args count =
 
 
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-delete_subsection :: [[String]] -> [String] -> IO()
-delete_subsection list args =
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+delete_section :: [[String]] -> [String] -> IO()
+delete_section list args =
     if length args > 1
         then
             do
-                let newList = delete_check_subsection list list args 0
+                let newList = delete_check_section list list args 0
                 if length newList > 0
                     then 
                         do
                             write_file newList args
                     else 
                         do
-                            putStrLn "Subsection to delete not found"
+                            putStrLn "section to delete not found"
         else 
             do
-                putStrLn "Incorrect number of arguments - no subsection to delete"
+                putStrLn "Incorrect number of arguments - no section to delete"
 
-delete_check_subsection :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
-delete_check_subsection [x] oldList args count =
+delete_check_section :: [[String]] -> [[String]] -> [String] -> Int -> [[String]]
+delete_check_section [x] oldList args count =
     do  
         if (length x > 0)
             then
                 do 
-                    if ((head x) == (args !! 1))
+                    if ((head x) == ("##" ++ args !! 1))
                         then
                             do
                                 init oldList
@@ -289,30 +295,30 @@ delete_check_subsection [x] oldList args count =
                             [[""]]
             else 
                 [[""]]
-delete_check_subsection currentList oldList args count = 
+delete_check_section currentList oldList args count = 
     do 
         let x = head currentList
         if (length x > 0)
             then 
                 do 
-                    if ((head x) == (args !! 1))
+                    if ((head x) == ("##" ++ args !! 1))
                         then 
                             do
                                 let (xs, ys) = splitAt count oldList
                                 xs ++ tail ys
                         else 
                             do
-                                delete_check_subsection (tail currentList) oldList args (count+1)
+                                delete_check_section (tail currentList) oldList args (count+1)
             else 
                 do
-                    delete_check_subsection (tail currentList) oldList args (count+1)
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+                    delete_check_section (tail currentList) oldList args (count+1)
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-delete_from_subsection :: [[String]] -> [String] -> IO()
-delete_from_subsection list args =
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DELETE_FROM_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+delete_from_section :: [[String]] -> [String] -> IO()
+delete_from_section list args =
      if length args > 2
         then
             do
@@ -323,7 +329,7 @@ delete_from_subsection list args =
                             write_file newList args
                     else 
                         do
-                            putStrLn "Either item or subsection not found"
+                            putStrLn "Either item or section not found"
         else 
             do
                 putStrLn "Incorrect number of arguments - no item to delete"
@@ -334,9 +340,9 @@ delete_check_item [x] oldList args count =
          if (length x > 0)
             then
                 do 
-                    -- If the parameter matches (it is the correct subsection), then we must check the items in the list to see if 
+                    -- If the parameter matches (it is the correct section), then we must check the items in the list to see if 
                     -- the item that the user specified to delete exists
-                    if ((head x) == (args !! 1))
+                    if ((head x) == ("##" ++ args !! 1))
                         then
                             do
                                 -- Returns either the new list with the item deleted or an empty list if it was not found  
@@ -358,7 +364,7 @@ delete_check_item currentList oldList args count =
         if (length x > 0)
             then 
                 do 
-                    if ((head x) == (args !! 1))
+                    if ((head x) == ("##" ++ args !! 1))
                         then 
                             do
                                 let innerList = check_delete_inner x x args 0
@@ -379,7 +385,7 @@ check_delete_inner :: [String] -> [String] -> [String] -> Int -> [String]
 check_delete_inner [x] oldList args count =
     do
         -- if the item to delete matches up with the last one
-        if (x == (args !! 2))
+        if (x == ("* " ++ args !! 2))
              then 
                 do
                     -- we send back the oldList, sans the one to delete
@@ -391,7 +397,7 @@ check_delete_inner [x] oldList args count =
 check_delete_inner currentList oldList args count =
     do
         let x = head currentList
-        if (x == (args !! 2))
+        if (x == ("* " ++ args !! 2))
             then
                 do
                     let (xs, ys) = splitAt count oldList
@@ -400,7 +406,7 @@ check_delete_inner currentList oldList args count =
                 do
                     check_delete_inner (tail currentList) oldList args (count+1)
 
--- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_SUBSECTION FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ END OF DELETE_FROM_section FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 
 -- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DO_ITEM FUNCTIONS @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -593,7 +599,7 @@ write_file buffer args =
          write_file (tail buffer) args 
 
 -- Writes individual lines to the file specified in args 
--- More logic is needed to put an extra space after the item if it is the last item of a subsection 
+-- More logic is needed to put an extra space after the item if it is the last item of a section 
 write_inner_file :: [String] -> [String] -> IO()
 write_inner_file [x] args =
     do
@@ -609,12 +615,12 @@ write_inner_file [x] args =
                                 appendFile (head args) (x ++ "\n" ++ "\n")
                         else
                             do
-                                -- if it's a subsection of the file
+                                -- if it's a section of the file
                                 if (x !! 0 == '#' && x !! 1 /= '#')
                                     then
                                         do
                                             appendFile (head args) ("\n" ++ x ++ "\n")
-                                    -- else, it's probably an item (subsection item or not)
+                                    -- else, it's probably an item (section item or not)
                                     else
                                         do
                                             appendFile (head args) (x ++ "\n")
@@ -660,13 +666,13 @@ read_file fileName =
              lines file
 
 
--- Breaks down subsections into their individual items
--- Subsection heading is the first item in the list it returns  
+-- Breaks down sections into their individual items
+-- section heading is the first item in the list it returns  
 item_breakdown :: [String] -> [String] -> Int -> ([String], Int)
 item_breakdown [] elementList count = (elementList, count)
 item_breakdown [x] elementList count =
      do 
-        -- if the element is a new subsection header or a newline, then we know that it is not a subsection item 
+        -- if the element is a new section header or a newline, then we know that it is not a section item 
          if (length x > 0)
             then 
                  do 
@@ -675,7 +681,7 @@ item_breakdown [x] elementList count =
                            then 
                                 do
                                      (elementList, count)
-                           -- otherwise, it is an item to be included in the subsection list 
+                           -- otherwise, it is an item to be included in the section list 
                            else 
                                 do
                                      let newCount = count + 1
@@ -733,8 +739,8 @@ breakdown fileData buffer =
                                              let (sublist, count) = item_breakdown t [h] 0 
                                              -- We don't want the part of the list with the old items, so we leave them out
                                              let (_, remaining) = splitAt count t
-                                             -- newElement is the "subsection" that we're adding to the buffer. I
-                                             -- It consists of the name of the subsection at list[0], and the items belonging to it from list[1]-[n]
+                                             -- newElement is the "section" that we're adding to the buffer. I
+                                             -- It consists of the name of the section at list[0], and the items belonging to it from list[1]-[n]
                                              let newBuffer = buffer ++ [sublist]
                                              breakdown remaining newBuffer  
                                      else 
@@ -745,7 +751,7 @@ breakdown fileData buffer =
                                                        breakdown t buffer 
                                              else 
                                                   do 
-                                                       -- else, it's a subsection-less element 
+                                                       -- else, it's a section-less element 
                                                        -- we will probably want more elses in here for error-handling, but for now, I'm just assuming these 3 possibilities 
                                                        -- The empty string for the head of the element is just so we can get an extra space in there 
                                                        let newBuffer = buffer ++ [[""]++[h]]
@@ -761,10 +767,31 @@ main = do
          then 
              do 
                  -- if they're creating a new file/list, then we don't check to see if the file exists 
-                 if (command == "create_list")
+                 if (command == "create_new_list")
                      then 
                          do 
-                             create_list args
+                             -- create_list args
+                            currentDir <- getCurrentDirectory
+                            let newFileName = args !! 0
+                            let newFilePath = currentDir ++ "\\" ++ newFileName
+
+                            if (length args > 1)
+                                then 
+                                    do
+                                        let listName = "#" ++ args !! 1
+                                        openFile newFilePath ReadWriteMode -- returns Handle not IO () which is problematic
+                                        appendFile newFilePath listName
+                                        putStr "Created new list file."
+                                else 
+                                    do
+                                        let listName = "# Default List Name"
+                                        openFile newFilePath ReadWriteMode -- returns Handle not IO () which is problematic
+                                        appendFile newFilePath listName
+                                        putStr "Created new list file."
+
+                            --newFile <- openFile newFilePath ReadWriteMode -- returns Handle not IO () which is problematic
+                            --writeFile newFile listName
+                            --putStr "Created new list file."
                      else
                          do  
                              let (Just action) = lookup command dispatch
@@ -774,13 +801,23 @@ main = do
                                 then 
                                     do 
                                         -- if the file exists, then we read it and pass the resulting list to the action that the user wanted
-                                        -- each action takes in the buffer (the list) and the arguments (the name of the subsection, etc.)
+                                        -- each action takes in the buffer (the list) and the arguments (the name of the section, etc.)
                                         let buffer = read_file fileName
                                         let list = breakdown buffer []
                                         action list args
                                 else 
                                     do 
-                                        putStrLn "This file does not exist" 
+                                        putStrLn "This file does not exist. Creating a new file."
+                                        currentDir <- getCurrentDirectory
+                                        let newFileName = "todoList.md"
+                                        let newFilePath = currentDir ++ "\\" ++ newFileName
+                                        openFile newFilePath ReadWriteMode -- returns Handle not IO () which is problematic
+                                        putStr "Created new list file."
          else 
              do
-                 putStrLn "Incorrect number of arguments"    
+                -- Create new list with default name, todoList.md
+                currentDir <- getCurrentDirectory
+                let newFileName = "todoList.md"
+                let newFilePath = currentDir ++ "\\" ++ newFileName
+                openFile newFilePath ReadWriteMode -- returns Handle not IO () which is problematic
+                putStr "Created new list file."
