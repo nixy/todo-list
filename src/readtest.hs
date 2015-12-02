@@ -33,7 +33,6 @@ add_to_list list args =
             then 
                 do 
                     let newList = list ++ [[""] ++ ["* " ++ (args !! 1)]]
-                    print newList
                     write_file newList args   
             else 
                 do
@@ -612,14 +611,14 @@ write_inner_file [x] args =
                     if (x !! 0 == '#' && x !! 1 == '#')
                         then 
                             do
-                                appendFile (head args) (x ++ "\n" ++ "\n")
+                                appendFile (head args) ("\n" ++ x ++ "\n")
                         else
                             do
                                 -- if it's a section of the file
                                 if (x !! 0 == '#' && x !! 1 /= '#')
                                     then
                                         do
-                                            appendFile (head args) ("\n" ++ x ++ "\n")
+                                            writeFile (head args) (x ++ "\n" ++ "\n")
                                     -- else, it's probably an item (section item or not)
                                     else
                                         do
@@ -638,7 +637,7 @@ write_inner_file buffer args =
                     if (x !! 0 == '#' && x !! 1 /= '#')
                         then 
                             do
-                                appendFile (head args) (x ++ "\n" ++ "\n")
+                                writeFile (head args) (x ++ "\n" ++ "\n")
                                 write_inner_file (tail buffer) args
                         else
                             do
