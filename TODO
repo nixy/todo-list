@@ -5,11 +5,9 @@ Robustness
 ----------
 * Currently unsure how error-handling will work. Any suggestions?
 
-Flexibility
------------
-* Right now any amount of leading whitespace will break all functions.
-*
+* Flexibility
+    * Currently not dealing with tabs
+        - CommonMark says a tab is equivalent to four spaces
 
-Features
---------
-* Currently missing a way to do ordered lists
+
+* Not sure how to implement makeIndented code from a design perspective
