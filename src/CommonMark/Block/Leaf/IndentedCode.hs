@@ -24,7 +24,8 @@ unmakeIndentedCode code = unlines (map (drop 4) (lines code))
 
 -- Checks if a string is an indented code block
 isIndentedCode :: String -> Bool
-isIndentedCode string = and (map (isPrefixOf "    ") filteredString)
+isIndentedCode string = and (map (isPrefixOf "    ") filteredString) &&
+                        filteredString /= []
     where
         filteredString = (filter (isNotBlankLine) (lines string))
 
