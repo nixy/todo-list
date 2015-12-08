@@ -8,7 +8,7 @@ module CommonMark.Block.Leaf.IndentedCode
 , isNotIndentedCode
 ) where
 
-import CommonMark.BlankLine (isNotBlankLine)
+import CommonMark.Block.Leaf.BlankLine (isNotBlankLine)
 import Data.List (isPrefixOf)
 
 -- Establish a type alias for an indented code block
