@@ -1,6 +1,18 @@
 TODO
 ====
 
+<<<<<<< HEAD
+Robustness
+----------
+* Currently unsure how error-handling will work. Any suggestions?
+
+* Flexibility
+    * Currently not dealing with tabs
+        - CommonMark says a tab is equivalent to four spaces
+
+
+* Not sure how to implement makeIndented code from a design perspective
+=======
 Command-Line Arguements
 -----------------------
 * create <name> - Creates a new todo list in a file named <name> with a list
@@ -25,3 +37,4 @@ Command-Line Arguements
 * remove <name> <item>
 
 * remove-from <name> <section> <item>
+>>>>>>> master
