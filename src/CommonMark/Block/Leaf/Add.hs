@@ -19,7 +19,6 @@ import CommonMark.Block.Leaf.Write
 -- Adds an item to the list at a given location
 -- if typeOf is h, it adds a header under a header
 -- if typeOf is p, it adds a paragraph under a header
--- if typeOf is l, it adds a list item under a header 
 add :: Char -> [String] -> [String] -> String -> IO()
 add typeOf args todoList fileName = 
     do
@@ -31,6 +30,7 @@ add typeOf args todoList fileName =
                 if (addCount > 0)
                     then do
                         write_file newList fileName 0
+                        print "Successfully wrote to file."
                     else do
                         print "Could not find location to add to - try append/prepend if you do not know the structure of the list"
             else if (typeOf == 'p')
@@ -41,7 +41,7 @@ add typeOf args todoList fileName =
                     if (addCount > 0)
                         then do
                             write_file newList fileName 0
-                            print newList
+                            print "Successfully wrote to file."
                         else do
                             print "Could not find location to add to - try append/prepend if you do not know the structure of the list"
                 else do
