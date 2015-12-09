@@ -1,4 +1,4 @@
-module CommonMark.Block.Leaf.BlankLine
+module CommonMark.BlankLine
 ( BlankLine
 
 , isBlankLine

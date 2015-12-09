@@ -8,7 +8,7 @@ module CommonMark.Block.Leaf.IndentedCode
 , isNotIndentedCode
 ) where
 
-import CommonMark.Block.Leaf.BlankLine (isNotBlankLine)
+import CommonMark.BlankLine (isNotBlankLine)
 import Data.List (isPrefixOf)
 
 -- Establish a type alias for an indented code block
@@ -24,8 +24,7 @@ unmakeIndentedCode code = unlines (map (drop 4) (lines code))
 
 -- Checks if a string is an indented code block
 isIndentedCode :: String -> Bool
-isIndentedCode string = and (map (isPrefixOf "    ") filteredString) &&
-                        filteredString /= []
+isIndentedCode string = and (map (isPrefixOf "    ") filteredString)
     where
         filteredString = (filter (isNotBlankLine) (lines string))
 

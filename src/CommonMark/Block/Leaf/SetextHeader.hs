@@ -24,7 +24,12 @@ makeSetextHeader string int = string -- Error case
 
 -- Turns a Setext Header into a string
 unmakeSetextHeader:: SetextHeader -> String
-unmakeSetextHeader header = head (lines header)
+unmakeSetextHeader header = 
+    if (length header > 0)
+        then do
+            head (lines header)
+        else do
+            header
 
 -- Checks if a string is a setext header
 -- TODO: Make more efficient

@@ -1,9 +1,6 @@
 module CommonMark.Block.Leaf.FencedCode
 ( FencedCode
 
---, makeFencedCode
---, unmakeFencedCode
-
 , isFencedCode
 , isNotFencedCode
 ) where
@@ -16,41 +13,48 @@ import Data.List (isInfixOf, isPrefixOf)
 type FencedCode = String
 
 -- Checks if a string is a fenced code block
--- TODO: DEFINETELY a better way to do this
--- TODO: Deal witht he fact that backticks cannot be on info strings
--- TODO: Should split string on words for one line code fencces
+-- TODO: Probably a better way to do this
 -- TODO: Fenced code block should be closed by the end of the document or
--- containing structure, possible solution in the preprocessor
+-- containing structure
 isFencedCode :: String -> Bool
-isFencedCode string = notIndentedCode &&
-                      (length (lines string) > 1) &&
-                      matchingFences &&
-                      noGapsInFences &&
-                      lastFenceIsSameOrLonger
+isFencedCode string = notCodeBlock &&
+                      ((isPrefixOf "```" firstFence && 
+                        isPrefixOf "```" lastFence &&
+                        lengthOfFirstFence <= lengthOfLastFence &&
+                        not (isInfixOf " " firstFence'') &&
+                        not (isInfixOf " " lastFence'')) ||
+                       (isPrefixOf "~~~" firstFence &&
+                        isPrefixOf "~~~" lastFence &&
+                        lengthOfFirstFence <= lengthOfLastFence &&
+                        not (isInfixOf " " firstFence'') &&
+                        not (isInfixOf " " lastFence'')))
+
     where
-        infoStringTrim = \x -> (isPrint x) && (x /= '`') && (x /= '~')
-        lengthFunc = \x -> if (x == '`' || x == '~') then True else False
+        notCodeBlock = and (map isNotIndentedCode (lines string))
+
+        filterFunc = \x -> isPrint x && not (isSpace x)
 
         firstFence = dropWhile (== ' ') (head (lines string))
-        firstFence' = reverse (dropWhile (infoStringTrim) (reverse firstFence))
-        lengthOfFirstFence = length (takeWhile lengthFunc firstFence)
+        firstFence' = dropWhile filterFunc (reverse firstFence)
+        firstFence'' = reverse (dropWhile isSpace (firstFence'))
 
         lastFence = dropWhile (== ' ') (last (lines string))
-        lastFence' = reverse (dropWhile (infoStringTrim) (reverse lastFence))
+        lastFence' = dropWhile filterFunc (reverse lastFence)
+        lastFence'' = reverse (dropWhile isSpace (lastFence'))
+
+        lengthFunc = \x -> if (x == '`' || x == '~') then True else False
+
+        lengthOfFirstFence = length (takeWhile lengthFunc firstFence)
         lengthOfLastFence = length (takeWhile lengthFunc lastFence)
 
-        firstFenceNotIndentedCode = isNotIndentedCode (head (lines string))
-        lastFenceNotIndentedCode = isNotIndentedCode (last (lines string))
-
-        notIndentedCode = firstFenceNotIndentedCode && lastFenceNotIndentedCode
-        matchingFences = (isPrefixOf "```" firstFence && isPrefixOf "```") ||
-                         (isPrefixOf "~~~" firstFence && isPrefixOf "~~~")
-        noGapsInFences = not (isInfixOf " " firstFence') &&
-                         not (isInfixOf " " lastFence')
-        lastFenceIsSameOrLonger = lengthOfFirstFence <= lengthOfLastFence
-
-
-
+getFence :: String -> String
+getFence string = firstFence''
+    where
+        firstFence = dropWhile (== ' ') (head (lines string))
+        firstFence' = dropWhile filterFunc (reverse firstFence)
+        firstFence'' = reverse (dropWhile isSpace (firstFence'))
+        filterFunc = \x -> isPrint x && not (isSpace x)
+        
 
 -- Checks if a string is not a fenced code block
 isNotFencedCode :: String -> Bool

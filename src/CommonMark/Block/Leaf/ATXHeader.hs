@@ -16,14 +16,19 @@ type ATXHeader = String
 
 -- Turns a string into an ATX header
 -- TODO: Do error handling for if int is greater than 6
-makeATXHeader :: String -> Int -> ATXHeader
+makeATXHeader :: String -> Int -> String
 makeATXHeader string int 
     | (int <= 6) && (int > 0) = (take int (repeat '#')) ++ " " ++ string
     | otherwise = string --error case
 
 -- Turns an ATX Header into a string
 unmakeATXHeader :: ATXHeader -> String
-unmakeATXHeader string = drop 1 (dropWhile (== '#') (dropWhile (== ' ') string))
+unmakeATXHeader string = 
+	if (length string > 0) 
+		then do
+			drop 1 (dropWhile (== '#') (dropWhile (== ' ') string))
+		else do
+			string
 
 -- Checks if a string is an ATX header
 isATXHeader :: String -> Bool

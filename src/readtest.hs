@@ -6,6 +6,7 @@ import Data.List
 import Data.List (intercalate)
 import Data.Char
 
+
 dispatch :: [(String, [[String]] -> [String] -> IO ())]  
 dispatch =  [ ("add_to_list", add_to_list) 
             , ("add_doable", add_doable)
@@ -779,12 +780,7 @@ main = do
                                         action list args
                                 else 
                                     do 
-                                        -- create the file since it doesn't exist
-                                        putStrLn "This file does not exist. A new To-Do file will be created." 
-                                        currentDirectory <- getCurrentDirectory
-                                        let newFilePath = currentDirectory ++ "\\" ++ fileName
-                                        openFile newFilePath ReadWriteMode 
-
+                                        putStrLn "This file does not exist" 
          else 
              do
                  putStrLn "Incorrect number of arguments"    
