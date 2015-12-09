@@ -1,6 +1,9 @@
 module CommonMark.Block.Leaf.FencedCode
 ( FencedCode
 
+--, makeFencedCode
+--, unmakeFencedCode
+
 , isFencedCode
 , isNotFencedCode
 ) where
@@ -19,15 +22,11 @@ type FencedCode = String
 -- TODO: Fenced code block should be closed by the end of the document or
 -- containing structure, possible solution in the preprocessor
 isFencedCode :: String -> Bool
-isFencedCode string = (firstFenceNotIndentedCode && lastFenceNotIndentedCode) &&
+isFencedCode string = notIndentedCode &&
                       (length (lines string) > 1) &&
-                      ((isPrefixOf "```" firstFence &&
-                        isPrefixOf "```" lastFence) ||
-                       (isPrefixOf "~~~" firstFence &&
-                        isPrefixOf "~~~" lastFence)) &&
-                      (not (isInfixOf " " firstFence') &&
-                       not (isInfixOf " " lastFence') &&
-                       lengthOfFirstFence <= lengthOfLastFence)
+                      matchingFences &&
+                      noGapsInFences &&
+                      lastFenceIsSameOrLonger
     where
         infoStringTrim = \x -> (isPrint x) && (x /= '`') && (x /= '~')
         lengthFunc = \x -> if (x == '`' || x == '~') then True else False
@@ -35,12 +34,21 @@ isFencedCode string = (firstFenceNotIndentedCode && lastFenceNotIndentedCode) &&
         firstFence = dropWhile (== ' ') (head (lines string))
         firstFence' = reverse (dropWhile (infoStringTrim) (reverse firstFence))
         lengthOfFirstFence = length (takeWhile lengthFunc firstFence)
-        firstFenceNotIndentedCode = isNotIndentedCode (head (lines string))
 
         lastFence = dropWhile (== ' ') (last (lines string))
         lastFence' = reverse (dropWhile (infoStringTrim) (reverse lastFence))
         lengthOfLastFence = length (takeWhile lengthFunc lastFence)
+
+        firstFenceNotIndentedCode = isNotIndentedCode (head (lines string))
         lastFenceNotIndentedCode = isNotIndentedCode (last (lines string))
+
+        notIndentedCode = firstFenceNotIndentedCode && lastFenceNotIndentedCode
+        matchingFences = (isPrefixOf "```" firstFence && isPrefixOf "```") ||
+                         (isPrefixOf "~~~" firstFence && isPrefixOf "~~~")
+        noGapsInFences = not (isInfixOf " " firstFence') &&
+                         not (isInfixOf " " lastFence')
+        lastFenceIsSameOrLonger = lengthOfFirstFence <= lengthOfLastFence
+
 
 
 
