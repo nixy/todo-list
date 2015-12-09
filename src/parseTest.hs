@@ -18,6 +18,7 @@ dispatch =  [ ("p", p)
             , ("l", l)
             , ("h", h)
             ]  
+-- user indicates the command that they're using 
 dispatch2 :: [(String, Char -> [String] -> [String] -> String -> IO())]
 dispatch2 = [("add", add)
             , ("remove", remove)
@@ -39,9 +40,11 @@ p args todoList fileName =
         if (length args > 0)
             then do
                 let secondArg = head args
+                -- using Just action will throw an exception if it is not in dispatch2 - so we need to check if the command is valid
                 if (secondArg == "add" || secondArg == "remove" || secondArg == "append" || secondArg == "prepend" || secondArg == "modify")
                     then do
                         let (Just action) = lookup secondArg dispatch2
+                        -- giving the action 'p' lets it know that it is performing a paragraph operation 
                         action 'p' (tail args) todoList fileName
                     else do 
                         putStrLn "Invalid secondary command - please type h for the list of commands"
@@ -189,13 +192,21 @@ checkParagraph oldList count =
                     count
 
 
+-- Creates a new file at the current directory with the name that the user has given
+create_list :: String -> IO()
+create_list fName = 
+    do
+        currentDir <- getCurrentDirectory
+        let newFileName = fName
+        let newFilePath = currentDir ++ "\\" ++ newFileName
+        openFile newFilePath ReadWriteMode 
+        putStr "Created new list file."
 
-create_list :: [String] -> IO()
-create_list list = 
-    print(list)
 
-
-
+-- Preprocessor function is needed to put setext headers and paragraphs into their own elements of the list 
+-- For instance, something like: Header would need to be in a single element of the list. 
+--                               ======
+-- recursively goes through the list from the file and gives a new String list with everything concatenated properly. 
 preprocessor :: [String] -> [String] -> [String]
 preprocessor oldList newList =
     do
@@ -230,18 +241,25 @@ preprocessor oldList newList =
                                             let oneString = unlines a -- contains all the lines that need to be concatenated into 1 string
                                             if (length b > 0) -- if the remaining items left to check have at least one element, then we call the function again
                                                 then do
-                                                    let list = newList ++ [oneString] 
+                                                    let list = newList ++ [oneString ++ "\n"] 
                                                     preprocessor b list
                                                 else do -- if not, then we've combined all the strings we needed to. We return this list of combined strings.
                                                     let f = show numPara
-                                                    newList ++ [oneString]
-                                        -- else, it's a regular list item. These do not need to be concatenated in any special way, so we just add xs to newList and call the function again
-                                        -- it could also be an ATX heading - however, these are only on 1 line as well, so it does not matter
-                                        else do 
-                                             let list1 = tail oldList
-                                             let list2 = newList ++ [xs]
-                                             preprocessor list1 list2
-                                
+                                                    newList ++ [oneString ++ "\n"]
+                                        -- if it's not an empty string (blank line), then we want to add a new line after it
+                                        -- if it is, we do not want to add a new line (otherwise the number of blank strings in the file will double each time)
+                                        else if (length xs > 0) 
+                                            then do 
+                                                 let list1 = tail oldList
+                                                 let list2 = newList ++ [xs ++ "\n"]
+                                                 preprocessor list1 list2
+                                            else do
+                                                 let list1 = tail oldList
+                                                 let list2 = newList ++ [xs]
+                                                 preprocessor list1 list2
+
+             -- if there's only one element left in the list, it cannot be a paragraph or setext header.
+             -- we append a new line to it and return the list                   
             else if (length oldList > 0)
                 then do
                     let xs = oldList !! 0
@@ -250,18 +268,22 @@ preprocessor oldList newList =
                     newList
 
 
-
+-- main function of the application. Gets the file that the user wants to perform operations on and executes them if they are correct.
+-- the file that is read from must be preprocessed prior to execution of the commands.
 main = do
     (fileName:args) <- getArgs 
     if (length args > 0)
          then do
              let command = head args
-             if (command == "p" || command == "l" || command == "h" || command == "create_list")
+             -- checks if the command is valid or if they are creating a new list 
+             if (command == "p" || command == "l" || command == "h" || fileName == "create_list")
                 then do
                      -- if they're creating a new file/list, then we don't check to see if the file exists 
-                     if (command == "create_list")
+                     if (fileName == "create_list")
                          then do 
-                             create_list args
+                            let newFileName = args !! 0
+                            -- calls the create_list function and gives it the name of the new list 
+                            create_list newFileName 
                          else do  
                              let (Just action) = lookup command dispatch
                              fileExists <- doesFileExist fileName  

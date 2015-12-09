@@ -1,23 +1,15 @@
-*This to-do list is stuff that I need to do*
+*This is my to-do list of things that need to be done*
 
-Title
-=====
 
-Title2
+Daily
 -----
 
-This is also a title
---------
 
-# Title 3
+Monthly 
+=======
 
-Title
-=====
-
-lolol
-fd
-
-# help me
+## Yearly 
 
 hello
-=====
+
+# Dale
