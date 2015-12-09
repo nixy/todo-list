@@ -87,7 +87,68 @@ l args todoList fileName =
 help_command :: IO()
 help_command = 
     do
-        putStrLn "To add"
+        putStrLn "==================="
+        putStrLn " ADDING / CREATING "
+        putStrLn "==================="
+        let a = "1. To create a new blank to-do list, type: " ++ "\n" ++ "\t ./ParseTest create_list \"listName.md\""
+        putStrLn a
+        let b = "2. To add a new header to a commonmark file, type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn b
+        let c = "3. To add a new header to a commonmark file (wildcard location) type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn c
+        let d = "4. To add a new paragraph to a commonmark file (exact location) type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn d
+        let e = "5. To add a new paragraph to a commonmark file (wildcard location) type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn e
+        putStrLn "=============="
+        putStrLn " REMOVING "
+        putStrLn "=============="
+        let f = "6. Remove header (exact string) type: "++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn f
+        let g = "7. Remove headers (wildcard) type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn g
+        let h = "8. Remove paragraph (exact string) type: " ++ "\n" ++ "\t ./ParseTest listName.md h add \"New Header\" \"Title\""
+        putStrLn h
+        let i = "9. Remove paragraphs (wildcard) " ++ "\n" ++ "\t ./ParseTest listName.md p remove \"He*\""
+        putStrLn "=============="
+        putStrLn " MODIFYING "
+        putStrLn "=============="
+        putStrLn i
+        let j = "10. Replace an exact Header with a new String: " ++ "\n" ++ "\t ./ParseTest listName.md h modify \"Title\" \"Title 1\""
+        putStrLn j
+        let k = "11. Replace a part of a Header with a new String: " ++ "\n" ++ "\t ./ParseTest listName.md h modify \"B*\" \"Bl\" (\"Boo\" -> \"Bloo\")"
+        putStrLn k
+        let l = "12. Replace an exact paragraph with a new String: " ++ "\n" ++ "\t ./ParseTest listName.md p modify \"Hello, my name is\" \"Hello, my name is Jia\""
+        putStrLn l 
+        let m = "13. Replace a part of a paragraph with a new String: " ++ "\n" ++ "\t ./ParseTest listName.md p modify \"He*\" \"Hee\" (\"Hello\" -> \"Heello\")"
+        putStrLn m
+        putStrLn "==================="
+        putStrLn " APPENDING TO LIST "
+        putStrLn "==================="
+        let n = "14. Append new header (default): " ++ "\n" ++ "\t ./ParseTest listName.md h append \"Header\""
+        putStrLn n
+        let o = "15. Append new header (set style to ATX header): " ++ "\n" ++ "\t ./ParseTest listName.md h append \"Header\" #"
+        putStrLn o
+        let p = "16. Append new header (set style to setext - header): " ++ "\n" ++ "\t ./ParseTest listName.md h append \"Header\" -"
+        putStrLn p
+        let q = "17. Append new paragraph: " ++ "\n" ++ "\t ./ParseTest listName.md p append \"new paragraph\""
+        putStrLn q
+        putStrLn "===================="
+        putStrLn " PRE-PENDING TO LIST "
+        putStrLn "===================="
+        let r = "18. Prepend new header (default): " ++ "\n" ++ "\t ./ParseTest listName.md h prepend \"Header\""
+        putStrLn r
+        let s = "19. Prepend new header (set style to ATX header): " ++ "\n" ++ "\t  ./ParseTest listName.md h prepend \"Header\" #"
+        putStrLn s
+        let t = "20. Prepend new header (set style to setext - header): " ++ "\n" ++ "\t ./ParseTest listName.md h prepend \"Header\" -"
+        putStrLn t
+        let u = "21. Prepend new paragraph: " ++ "\n" ++ "\t ./ParseTest listName.md p prepend \"new paragraph\""
+        putStrLn u 
+        putStrLn "==========="
+        putStrLn " HELP MENU"
+        putStrLn "==========="
+        let v = "22. Get a list of commands and how to use them: " ++ "\n" ++ "\t ./ParseTest h"
+        putStrLn v
 
 -- Checks to see if the strings are a type A heading - that is, if they are two strings that are a setext header with '='
 -- Header
