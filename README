@@ -1,7 +1,31 @@
-# Unix-Style To-Do List Manager
-by Kyle Davis, Andrew Miller, & Nadya Pena
+# CommonMark Todo-List Parser
+This project is designed to be a todo-list manager focused on managing lists
+written in the CommonMark dialect of Markdown.
 
-### Project Description
+The usage of a command line tool to do these tasks opens up a whole world of
+automation and scripting possibilities.
+
+## Features
+ * Ability to create new files 
+ * Ability to add certain leaf blocks to a CommonMark file
+ * Ability to identify certain leaf blocks in a CommonMark file
+  - This allows blocks to be specified and have new items added after or before
+    them
+
+## Planned Features
+ * Ability to identify all blocks and inlines in a CommonMark file
+ * Ability to add all blocks in a CommonMark file
+ * Ability to read user preferences from a runtime configuration file
+ * Ability to read files and use them to create code blocks in a CommonMark file
+ * Separation of backend parser and frontend application
+
+
+## Supported Platforms
+ * Windows 8.1
+ * Linux
+	
+## Using the application
+
 A Unix-style, to-do list management tool for creating and managing tasks. The application has the following features:
 - Ability to create new to-do lists via command line arguments
 - Ability to add tasks to existing to-do lists via command line arguments
@@ -10,5 +34,3 @@ A Unix-style, to-do list management tool for creating and managing tasks. The ap
 - Ability to mark, or check-off, items on the list once they’re completed 
 - Ability to give multiple users on a single machine their own separate to-do lists. This is accomplished through the use of environment variables.
 - Ability to export lists, which are in Markdown by default, to other formats such as PDF and HTML. 
-
-
