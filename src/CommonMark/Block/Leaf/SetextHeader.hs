@@ -17,10 +17,10 @@ type SetextHeader = String
 
 -- Turns a string into a setext Header
 -- TODO: Do error handling for ints != 1,2
-makeSetextHeader :: String -> Int -> SetextHeader
-makeSetextHeader string 1 = string ++ '\n':(take (length string) (repeat '='))
-makeSetextHeader string 2 = string ++ '\n':(take (length string) (repeat '-'))
-makeSetextHeader string int = string -- Error case
+makeSetextHeader :: Int -> String -> SetextHeader
+makeSetextHeader 1 string = string ++ '\n':(take (length string) (repeat '='))
+makeSetextHeader 2 string = string ++ '\n':(take (length string) (repeat '-'))
+makeSetextHeader int string = string -- Error case
 
 -- Turns a Setext Header into a string
 unmakeSetextHeader:: SetextHeader -> String

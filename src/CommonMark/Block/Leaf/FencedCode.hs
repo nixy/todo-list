@@ -16,8 +16,7 @@ import Data.List (isInfixOf, isPrefixOf)
 type FencedCode = String
 
 -- Checks if a string is a fenced code block
--- TODO: DEFINETELY a better way to do this
--- TODO: Deal witht he fact that backticks cannot be on info strings
+-- TODO: Deal with the fact that backticks cannot be on info strings
 -- TODO: Should split string on words for one line code fencces
 -- TODO: Fenced code block should be closed by the end of the document or
 -- containing structure, possible solution in the preprocessor
@@ -26,31 +25,33 @@ isFencedCode string = notIndentedCode &&
                       (length (lines string) > 1) &&
                       matchingFences &&
                       noGapsInFences &&
-                      lastFenceIsSameOrLonger
+                      lastFenceIsLeastSameLength
     where
-        infoStringTrim = \x -> (isPrint x) && (x /= '`') && (x /= '~')
+        isInfoString = \x -> (isPrint x) && (x /= '`') && (x /= '~')
         lengthFunc = \x -> if (x == '`' || x == '~') then True else False
 
         firstFence = dropWhile (== ' ') (head (lines string))
-        firstFence' = reverse (dropWhile (infoStringTrim) (reverse firstFence))
+        firstFence' = reverse (dropWhile (isInfoString) (reverse firstFence))
         lengthOfFirstFence = length (takeWhile lengthFunc firstFence)
 
         lastFence = dropWhile (== ' ') (last (lines string))
-        lastFence' = reverse (dropWhile (infoStringTrim) (reverse lastFence))
+        lastFence' = reverse (dropWhile (isInfoString) (reverse lastFence))
         lengthOfLastFence = length (takeWhile lengthFunc lastFence)
 
         firstFenceNotIndentedCode = isNotIndentedCode (head (lines string))
         lastFenceNotIndentedCode = isNotIndentedCode (last (lines string))
 
         notIndentedCode = firstFenceNotIndentedCode && lastFenceNotIndentedCode
-        matchingFences = (isPrefixOf "```" firstFence && isPrefixOf "```") ||
-                         (isPrefixOf "~~~" firstFence && isPrefixOf "~~~")
+
+        matchingFences = (isPrefixOf "```" firstFence && 
+                          isPrefixOf "```" lastFence) ||
+                         (isPrefixOf "~~~" firstFence &&
+                          isPrefixOf "~~~" lastFence)
+
         noGapsInFences = not (isInfixOf " " firstFence') &&
                          not (isInfixOf " " lastFence')
-        lastFenceIsSameOrLonger = lengthOfFirstFence <= lengthOfLastFence
 
-
-
+        lastFenceIsLeastSameLength = lengthOfFirstFence <= lengthOfLastFence
 
 -- Checks if a string is not a fenced code block
 isNotFencedCode :: String -> Bool
