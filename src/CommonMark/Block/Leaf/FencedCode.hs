@@ -48,6 +48,7 @@ isFencedCode string = notIndentedCode &&
                          not (isInfixOf " " lastFence')
 
         lastFenceIsLeastSameLength = lengthOfFirstFence <= lengthOfLastFence
+
 -- Checks if a string is not a fenced code block
 isNotFencedCode :: String -> Bool
 isNotFencedCode string = not (isFencedCode string)
